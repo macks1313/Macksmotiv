@@ -2,6 +2,7 @@ import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
 import openai
@@ -28,6 +29,9 @@ def debug_paths():
 
 debug_paths()
 
+# Rendre chromedriver exécutable
+subprocess.run(["chmod", "+x", CHROMEDRIVER_PATH], check=True)
+
 # Configuration des options Selenium
 chrome_options = Options()
 chrome_options.binary_location = CHROME_BIN
@@ -44,9 +48,12 @@ chrome_options.add_argument("--no-first-run")
 chrome_options.add_argument("--no-default-browser-check")
 chrome_options.add_argument("--disable-popup-blocking")
 
+# Initialisation du service Selenium
+service = Service(executable_path=CHROMEDRIVER_PATH)
+
 # Initialisation de Selenium
 try:
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 except Exception as e:
     print("Erreur lors de l'initialisation de Selenium :", str(e))
     raise
