@@ -11,19 +11,14 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Configuration des options Selenium pour Heroku
+# Configuration des options Selenium pour Chromium
 chrome_options = Options()
 chrome_options.add_argument("--headless")  # Exécution sans interface graphique
 chrome_options.add_argument("--no-sandbox")  # Requis par Heroku
-chrome_options.add_argument("--disable-dev-shm-usage")  # Limiter l'utilisation de la mémoire partagée
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--remote-debugging-port=9222")
+chrome_options.add_argument("--disable-dev-shm-usage")  # Limite l'utilisation de la mémoire partagée
 
-# Utilisation de Chromedriver avec le chemin Heroku
-driver = webdriver.Chrome(
-    service=Service("/app/.chromedriver/bin/chromedriver"),
-    options=chrome_options
-)
+# Utilisation du chemin par défaut de Chromium sur Heroku
+driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
