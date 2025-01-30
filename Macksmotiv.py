@@ -24,7 +24,7 @@ except Exception as e:
     print("Erreur lors de la préparation de Chromedriver :", str(e))
     raise
 
-# Vérification des chemins
+# Vérification des chemins et des versions installées
 def debug_paths():
     print("Chemin Chromium :", CHROME_BIN)
     print("Chemin Chromedriver temporaire :", TEMP_CHROMEDRIVER_PATH)
@@ -34,6 +34,10 @@ def debug_paths():
 
     print("Résultat 'which chromium-browser':", result_chrome.stdout.decode().strip())
     print("Résultat 'which chromedriver':", result_driver.stdout.decode().strip())
+
+    # Vérification des versions installées
+    result_chrome_version = subprocess.run([CHROME_BIN, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("Version de Chromium :", result_chrome_version.stdout.decode().strip())
 
 debug_paths()
 
