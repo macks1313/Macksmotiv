@@ -6,32 +6,34 @@ from selenium.webdriver.chrome.options import Options
 import time
 import random
 import openai
-from dotenv import load_dotenv
 import os
 
-# Charger les variables d'environnement
-load_dotenv()
+# Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Configuration Selenium
+# Configuration des options Selenium pour Heroku
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Pour Heroku (sans interface)
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--headless")  # Exécution sans interface graphique
+chrome_options.add_argument("--no-sandbox")  # Requis par Heroku
+chrome_options.add_argument("--disable-dev-shm-usage")  # Limiter l'utilisation de la mémoire partagée
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--remote-debugging-port=9222")
 
-# Chemin vers le driver Chrome
-driver_path = "/path/to/chromedriver"  # Met à jour avec le chemin du driver
-driver = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
+# Utilisation de Chromedriver avec le chemin Heroku
+driver = webdriver.Chrome(
+    service=Service("/app/.chromedriver/bin/chromedriver"),
+    options=chrome_options
+)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
 PASSWORD = os.getenv("TWITTER_PASSWORD")
 
-# Se connecter à Twitter
+# Fonction pour se connecter à Twitter
 def login_twitter():
     driver.get("https://twitter.com/login")
     time.sleep(5)
-    
+
     username_input = driver.find_element(By.NAME, "text")
     username_input.send_keys(USERNAME)
     username_input.send_keys(Keys.RETURN)
@@ -46,9 +48,9 @@ def login_twitter():
 def generate_tweet():
     prompt = (
         "Crée un tweet sarcastique mais motivant, de moins de 270 caractères, "
-        "avec des hashtags populaires. Le tweet doit être adapté à une page de développement personnel."
+        "avec des hashtags populaires adaptés à une page de développement personnel."
     )
-    
+
     response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
@@ -56,11 +58,11 @@ def generate_tweet():
             {"role": "user", "content": prompt}
         ]
     )
-    
+
     tweet = response.choices[0].message['content'].strip()
     return tweet
 
-# Poster un tweet
+# Fonction pour poster un tweet
 def post_tweet(tweet):
     driver.get("https://twitter.com/compose/tweet")
     time.sleep(5)
@@ -79,7 +81,7 @@ def respond_to_mentions():
     time.sleep(5)
 
     mentions = driver.find_elements(By.XPATH, "//div[@data-testid='tweet']")
-    for mention in mentions[:3]:  # Limite à 3 réponses pour éviter le spam
+    for mention in mentions[:3]:
         try:
             mention.click()
             time.sleep(3)
@@ -100,7 +102,7 @@ def respond_to_dms():
     time.sleep(5)
 
     dms = driver.find_elements(By.XPATH, "//div[@data-testid='conversation']")
-    for dm in dms[:3]:  # Limite à 3 réponses
+    for dm in dms[:3]:
         try:
             dm.click()
             time.sleep(3)
@@ -108,7 +110,7 @@ def respond_to_dms():
             messages = driver.find_elements(By.XPATH, "//div[@data-testid='messageEntry']")
             if messages:
                 last_message = messages[-1].text
-                response = generate_tweet()  # Générer une réponse
+                response = generate_tweet()
 
                 message_input = driver.find_element(By.XPATH, "//div[@aria-label='Message']")
                 message_input.send_keys(response)
@@ -117,7 +119,7 @@ def respond_to_dms():
         except Exception as e:
             print("Erreur lors de la réponse à un DM :", e)
 
-# Planification du bot
+# Fonction principale pour lancer le bot
 def run_bot():
     login_twitter()
 
