@@ -2,7 +2,6 @@ import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
 import openai
@@ -11,12 +10,10 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Ajout du chemin de Chromedriver au PATH
+# Configuration des chemins
+CHROME_BIN = "/usr/bin/chromium-browser"
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
-os.environ["PATH"] += os.pathsep + os.path.dirname(CHROMEDRIVER_PATH)
-
-# Chemin de Chromium
-CHROME_BIN = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/chromium-browser")
+os.environ["PATH"] += os.pathsep + "/usr/bin"
 
 # Débogage pour vérifier les chemins
 def debug_paths():
@@ -42,15 +39,8 @@ chrome_options.add_argument("--disable-background-timer-throttling")
 chrome_options.add_argument("--disable-backgrounding-occluded-windows")
 chrome_options.add_argument("--disable-renderer-backgrounding")
 
-# Initialisation de Selenium avec le chemin explicite de Chromedriver
-try:
-    driver = webdriver.Chrome(
-        service=Service(CHROMEDRIVER_PATH),
-        options=chrome_options
-    )
-except Exception as e:
-    print("Erreur lors de l'initialisation de Selenium :", str(e))
-    raise
+# Initialisation de Selenium sans utiliser le service explicitement
+driver = webdriver.Chrome(options=chrome_options)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
