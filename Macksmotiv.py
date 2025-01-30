@@ -11,10 +11,10 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Configuration des chemins
-CHROME_BIN = "/usr/bin/chromium-browser"
-CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
-os.environ["PATH"] += os.pathsep + "/usr/bin"
+# Configuration des chemins pour Heroku
+CHROME_BIN = "/app/.apt/usr/bin/chromium-browser"
+CHROMEDRIVER_PATH = "/app/.apt/usr/bin/chromedriver"
+os.environ["PATH"] += os.pathsep + "/app/.apt/usr/bin"
 
 # Débogage pour vérifier les chemins
 def debug_paths():
@@ -28,9 +28,6 @@ def debug_paths():
     print("Résultat 'which chromedriver':", result_driver.stdout.decode().strip())
 
 debug_paths()
-
-# Rendre chromedriver exécutable
-subprocess.run(["chmod", "+x", CHROMEDRIVER_PATH], check=True)
 
 # Configuration des options Selenium
 chrome_options = Options()
