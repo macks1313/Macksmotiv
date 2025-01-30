@@ -11,19 +11,19 @@ import os
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Configuration des chemins
-CHROME_BIN = "/usr/bin/google-chrome-stable"
+CHROME_BIN = "/usr/bin/chromium-browser"
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 os.environ["PATH"] += os.pathsep + "/usr/bin"
 
 # Débogage pour vérifier les chemins
 def debug_paths():
-    print("Chemin Google Chrome :", CHROME_BIN)
+    print("Chemin Chromium :", CHROME_BIN)
     print("Chemin Chromedriver :", CHROMEDRIVER_PATH)
 
-    result_chrome = subprocess.run(['which', 'google-chrome-stable'], stdout=subprocess.PIPE)
+    result_chrome = subprocess.run(['which', 'chromium-browser'], stdout=subprocess.PIPE)
     result_driver = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
 
-    print("Résultat 'which google-chrome-stable':", result_chrome.stdout.decode().strip())
+    print("Résultat 'which chromium-browser':", result_chrome.stdout.decode().strip())
     print("Résultat 'which chromedriver':", result_driver.stdout.decode().strip())
 
 debug_paths()
