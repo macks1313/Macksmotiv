@@ -38,9 +38,18 @@ chrome_options.add_argument("--remote-debugging-port=9222")
 chrome_options.add_argument("--disable-background-timer-throttling")
 chrome_options.add_argument("--disable-backgrounding-occluded-windows")
 chrome_options.add_argument("--disable-renderer-backgrounding")
+chrome_options.add_argument("--disable-extensions")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-first-run")
+chrome_options.add_argument("--no-default-browser-check")
+chrome_options.add_argument("--disable-popup-blocking")
 
-# Initialisation de Selenium sans utiliser le service explicitement
-driver = webdriver.Chrome(options=chrome_options)
+# Initialisation de Selenium
+try:
+    driver = webdriver.Chrome(options=chrome_options)
+except Exception as e:
+    print("Erreur lors de l'initialisation de Selenium :", str(e))
+    raise
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
