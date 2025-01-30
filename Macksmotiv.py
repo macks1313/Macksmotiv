@@ -1,3 +1,4 @@
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -11,14 +12,26 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Fonction pour vérifier le chemin de chromedriver
+def check_chromedriver_path():
+    result = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
+    chromedriver_path = result.stdout.decode().strip()
+    if not chromedriver_path:
+        raise FileNotFoundError("Chromedriver n'est pas trouvé dans le PATH.")
+    print("Chemin de chromedriver :", chromedriver_path)
+    return chromedriver_path
+
+# Récupération du chemin de chromedriver
+chromedriver_path = check_chromedriver_path()
+
 # Configuration des options Selenium pour Chromium
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Exécution sans interface graphique
-chrome_options.add_argument("--no-sandbox")  # Requis par Heroku
-chrome_options.add_argument("--disable-dev-shm-usage")  # Limite l'utilisation de la mémoire partagée
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
 
-# Utilisation du chemin par défaut de Chromium sur Heroku
-driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
+# Utilisation du chemin de chromedriver
+driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
