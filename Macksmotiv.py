@@ -11,32 +11,40 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Définir les chemins pour Chromium et Chromedriver
-CHROME_BIN = "/usr/bin/chromium-browser"
-CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
+# Récupération des chemins pour Chromium et Chromedriver
+CHROME_BIN = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/chromium-browser")
+CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
 
-# Fonction de débogage pour vérifier les chemins de Chromium et Chromedriver
+# Débogage pour vérifier les chemins
 def debug_paths():
+    print("Chemin défini de Chromium :", CHROME_BIN)
+    print("Chemin défini de Chromedriver :", CHROMEDRIVER_PATH)
+
     result_chrome = subprocess.run(['which', 'chromium-browser'], stdout=subprocess.PIPE)
     result_driver = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
-    print("Chemin Chromium :", result_chrome.stdout.decode().strip())
-    print("Chemin Chromedriver :", result_driver.stdout.decode().strip())
+
+    print("Résultat 'which chromium-browser':", result_chrome.stdout.decode().strip())
+    print("Résultat 'which chromedriver':", result_driver.stdout.decode().strip())
 
 debug_paths()
 
-# Configuration des options Selenium pour Chromium
+# Configuration des options de Selenium
 chrome_options = Options()
-chrome_options.binary_location = CHROME_BIN  # Définir le chemin de Chromium
+chrome_options.binary_location = CHROME_BIN  # Utilisation du chemin défini pour Chromium
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--remote-debugging-port=9222")
 
-# Initialisation de Selenium
-driver = webdriver.Chrome(
-    service=Service(CHROMEDRIVER_PATH),
-    options=chrome_options
-)
+# Initialisation du driver avec le chemin explicite de Chromedriver
+try:
+    driver = webdriver.Chrome(
+        service=Service(CHROMEDRIVER_PATH),
+        options=chrome_options
+    )
+except Exception as e:
+    print("Erreur lors de l'initialisation de Selenium :", str(e))
+    raise
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
