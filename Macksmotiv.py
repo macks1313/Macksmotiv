@@ -13,13 +13,21 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Configuration des chemins pour Heroku
 CHROME_BIN = "/app/.apt/usr/bin/chromium-browser"
-CHROMEDRIVER_PATH = "/app/.apt/usr/bin/chromedriver"
-os.environ["PATH"] += os.pathsep + "/app/.apt/usr/bin"
+CHROMEDRIVER_ORIGINAL_PATH = "/app/.apt/usr/bin/chromedriver"
+TEMP_CHROMEDRIVER_PATH = "/tmp/chromedriver"
+
+# Copier chromedriver vers un répertoire temporaire et lui donner les permissions d'exécution
+try:
+    subprocess.run(["cp", CHROMEDRIVER_ORIGINAL_PATH, TEMP_CHROMEDRIVER_PATH], check=True)
+    subprocess.run(["chmod", "+x", TEMP_CHROMEDRIVER_PATH], check=True)
+except Exception as e:
+    print("Erreur lors de la préparation de Chromedriver :", str(e))
+    raise
 
 # Vérification des chemins
 def debug_paths():
     print("Chemin Chromium :", CHROME_BIN)
-    print("Chemin Chromedriver :", CHROMEDRIVER_PATH)
+    print("Chemin Chromedriver temporaire :", TEMP_CHROMEDRIVER_PATH)
 
     result_chrome = subprocess.run(['which', 'chromium-browser'], stdout=subprocess.PIPE)
     result_driver = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
@@ -31,7 +39,7 @@ debug_paths()
 
 # Vérification du démarrage de chromedriver
 try:
-    result = subprocess.run([CHROMEDRIVER_PATH, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = subprocess.run([TEMP_CHROMEDRIVER_PATH, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         print("Erreur : Chromedriver n'a pas pu démarrer.")
         print("Sortie d'erreur :", result.stderr.decode())
@@ -59,7 +67,7 @@ chrome_options.add_argument("--no-default-browser-check")
 chrome_options.add_argument("--disable-popup-blocking")
 
 # Initialisation du service Selenium avec un chemin de log
-service = Service(executable_path=CHROMEDRIVER_PATH, log_path="/tmp/chromedriver.log")
+service = Service(executable_path=TEMP_CHROMEDRIVER_PATH, log_path="/tmp/chromedriver.log")
 
 # Initialisation de Selenium
 try:
@@ -140,7 +148,30 @@ def respond_to_mentions():
         except Exception as e:
             print("Erreur lors de la réponse à une mention :", e)
 
-# Fonction principale
+# Répondre automatiquement aux DM
+def respond_to_dms():
+    driver.get("https://twitter.com/messages")
+    time.sleep(5)
+
+    dms = driver.find_elements(By.XPATH, "//div[@data-testid='conversation']")
+    for dm in dms[:3]:
+        try:
+            dm.click()
+            time.sleep(3)
+
+            messages = driver.find_elements(By.XPATH, "//div[@data-testid='messageEntry']")
+            if messages:
+                last_message = messages[-1].text
+                response = generate_tweet()
+
+                message_input = driver.find_element(By.XPATH, "//div[@aria-label='Message']")
+                message_input.send_keys(response)
+                message_input.send_keys(Keys.RETURN)
+                time.sleep(3)
+        except Exception as e:
+            print("Erreur lors de la réponse à un DM :", e)
+
+# Fonction principale pour lancer le bot
 def run_bot():
     login_twitter()
 
@@ -152,15 +183,23 @@ def run_bot():
 
             tweet_count += 1
             if tweet_count % 5 == 0:
+                # Créer un thread tous les 5 tweets
                 thread_tweet = (
                     "Voici un thread de motivation sarcastique. 🧵\n\n"
-                    "1/ Ce n'est pas parce que tu as échoué aujourd'hui que tu ne vas pas échouer demain.\n"
+                    "1/ Ce n'est pas parce que tu as échoué aujourd'hui que tu ne vas pas échouer demain. "
+                    "Mais bon, il faut bien commencer quelque part.\n"
                     "2/ L'échec est un apprentissage. Si tu veux vraiment réussir, accumule les échecs plus vite.\n"
                     "3/ Dernier conseil : dors... ou pas."
                 )
                 post_tweet(thread_tweet)
 
+            # Répondre aux mentions et DM
+            respond_to_mentions()
+            respond_to_dms()
+
+            # Attendre 110 minutes avant le prochain tweet
             time.sleep(110 * 60)
+
         except Exception as e:
             print("Erreur dans l'exécution du bot :", e)
             time.sleep(60)
