@@ -29,8 +29,9 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--remote-debugging-port=9222")  # Option nécessaire pour éviter les crashs
 
-# Utilisation du chemin de chromedriver
+# Initialisation du driver avec le chemin de chromedriver
 driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
 
 # Identifiants Twitter
