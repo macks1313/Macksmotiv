@@ -5,34 +5,38 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
-import random
 import openai
 import os
 
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Fonction pour vérifier le chemin de chromedriver
-def check_chromedriver_path():
-    result = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
-    chromedriver_path = result.stdout.decode().strip()
-    if not chromedriver_path:
-        raise FileNotFoundError("Chromedriver n'est pas trouvé dans le PATH.")
-    print("Chemin de chromedriver :", chromedriver_path)
-    return chromedriver_path
+# Définir les chemins pour Chromium et Chromedriver
+CHROME_BIN = "/usr/bin/chromium-browser"
+CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 
-# Récupération du chemin de chromedriver
-chromedriver_path = check_chromedriver_path()
+# Fonction de débogage pour vérifier les chemins de Chromium et Chromedriver
+def debug_paths():
+    result_chrome = subprocess.run(['which', 'chromium-browser'], stdout=subprocess.PIPE)
+    result_driver = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
+    print("Chemin Chromium :", result_chrome.stdout.decode().strip())
+    print("Chemin Chromedriver :", result_driver.stdout.decode().strip())
+
+debug_paths()
 
 # Configuration des options Selenium pour Chromium
 chrome_options = Options()
+chrome_options.binary_location = CHROME_BIN  # Définir le chemin de Chromium
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("--remote-debugging-port=9222")  # Option nécessaire pour éviter les crashs
+chrome_options.add_argument("--remote-debugging-port=9222")
 
-# Initialisation du driver avec le chemin de chromedriver
-driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
+# Initialisation de Selenium
+driver = webdriver.Chrome(
+    service=Service(CHROMEDRIVER_PATH),
+    options=chrome_options
+)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
