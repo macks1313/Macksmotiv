@@ -11,14 +11,17 @@ import os
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Récupération des chemins pour Chromium et Chromedriver
+# Ajout du chemin de Chromedriver au PATH
+CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
+os.environ["PATH"] += os.pathsep + os.path.dirname(CHROMEDRIVER_PATH)
+
+# Chemin de Chromium
 CHROME_BIN = os.getenv("GOOGLE_CHROME_BIN", "/usr/bin/chromium-browser")
-CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
 
 # Débogage pour vérifier les chemins
 def debug_paths():
-    print("Chemin défini de Chromium :", CHROME_BIN)
-    print("Chemin défini de Chromedriver :", CHROMEDRIVER_PATH)
+    print("Chemin Chromium :", CHROME_BIN)
+    print("Chemin Chromedriver :", CHROMEDRIVER_PATH)
 
     result_chrome = subprocess.run(['which', 'chromium-browser'], stdout=subprocess.PIPE)
     result_driver = subprocess.run(['which', 'chromedriver'], stdout=subprocess.PIPE)
@@ -28,23 +31,16 @@ def debug_paths():
 
 debug_paths()
 
-# Configuration des options de Selenium
+# Configuration des options Selenium
 chrome_options = Options()
-chrome_options.binary_location = CHROME_BIN  # Utilisation du chemin défini pour Chromium
+chrome_options.binary_location = CHROME_BIN
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--remote-debugging-port=9222")
 
-# Initialisation du driver avec le chemin explicite de Chromedriver
-try:
-    driver = webdriver.Chrome(
-        service=Service(CHROMEDRIVER_PATH),
-        options=chrome_options
-    )
-except Exception as e:
-    print("Erreur lors de l'initialisation de Selenium :", str(e))
-    raise
+# Initialisation de Selenium
+driver = webdriver.Chrome(options=chrome_options)
 
 # Identifiants Twitter
 USERNAME = os.getenv("TWITTER_USERNAME")
